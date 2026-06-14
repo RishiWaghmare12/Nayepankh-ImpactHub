@@ -29,6 +29,7 @@ export default function Login() {
         'auth/invalid-email': 'Invalid email address.',
         'auth/too-many-requests': 'Too many attempts. Please try later.',
         'auth/invalid-credential': 'Invalid email or password.',
+        'auth/configuration-not-found': 'Firebase is not set up. Use a demo account below to explore the app.',
       };
       setError(messages[err.code] || 'Login failed. Please try again.');
     } finally {
@@ -41,8 +42,14 @@ export default function Login() {
       await loginWithGoogle();
       toast.success('Welcome! 🎉');
       navigate('/dashboard');
-    } catch {
-      toast.error('Google login failed');
+    } catch (err) {
+      if (err.code === 'auth/configuration-not-found') {
+        toast.error('Google login needs Firebase setup. Use a demo account below.', { duration: 4000 });
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        // user closed the popup — no toast needed
+      } else {
+        toast.error('Google login failed. Try a demo account instead.');
+      }
     }
   };
 

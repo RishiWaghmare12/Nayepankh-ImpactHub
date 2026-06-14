@@ -28,7 +28,14 @@ export default function Register() {
         'auth/email-already-in-use': 'This email is already registered.',
         'auth/invalid-email': 'Invalid email address.',
         'auth/weak-password': 'Password is too weak.',
+        'auth/configuration-not-found': 'Firebase is not set up — but we created a local session for you!',
       };
+      if (err.code === 'auth/configuration-not-found') {
+        // register() already set the local session, just navigate
+        toast.success('Account created! 🎉');
+        navigate('/dashboard');
+        return;
+      }
       setError(messages[err.code] || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);

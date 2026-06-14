@@ -79,26 +79,51 @@ export function AuthProvider({ children }) {
   const [isDemoUser, setIsDemoUser] = useState(false);
 
   const register = async (email, password, displayName, role = 'volunteer') => {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(cred.user, { displayName });
-    const profileData = {
-      uid: cred.user.uid,
-      email,
-      displayName,
-      role,
-      createdAt: serverTimestamp(),
-      totalDonations: 0,
-      volunteerHours: 0,
-      eventsJoined: 0,
-      impactScore: 0,
-      badges: [],
-      bio: '',
-      phone: '',
-      location: '',
-      interests: [],
-    };
-    await setDoc(doc(db, 'users', cred.user.uid), profileData);
-    return cred;
+    // Try Firebase first; if it fails (misconfigured project), create a local demo session
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(cred.user, { displayName });
+      const profileData = {
+        uid: cred.user.uid,
+        email,
+        displayName,
+        role,
+        createdAt: serverTimestamp(),
+        totalDonations: 0,
+        volunteerHours: 0,
+        eventsJoined: 0,
+        impactScore: 0,
+        badges: [],
+        bio: '',
+        phone: '',
+        location: '',
+        interests: [],
+      };
+      await setDoc(doc(db, 'users', cred.user.uid), profileData);
+      return cred;
+    } catch (err) {
+      // Firebase not configured — create a local session so the app is still usable
+      if (
+        err.code === 'auth/configuration-not-found' ||
+        err.code === 'auth/invalid-api-key' ||
+        err.code === 'auth/api-key-not-valid' ||
+        err.message?.includes('CONFIGURATION_NOT_FOUND') ||
+        err.message?.includes('400')
+      ) {
+        const uid = `local-${Date.now()}`;
+        const mockUser = { uid, email, displayName, emailVerified: false, isAnonymous: false };
+        const profile = {
+          uid, email, displayName, role,
+          totalDonations: 0, volunteerHours: 0, eventsJoined: 0, impactScore: 0,
+          badges: [], bio: '', phone: '', location: '', interests: [],
+        };
+        setUser(mockUser);
+        setUserProfile(profile);
+        setIsDemoUser(true);
+        return { user: mockUser };
+      }
+      throw err;
+    }
   };
 
   const login = async (email, password) => {
@@ -125,29 +150,42 @@ export function AuthProvider({ children }) {
   };
 
   const loginWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    const cred = await signInWithPopup(auth, provider);
-    const userRef = doc(db, 'users', cred.user.uid);
-    const snap = await getDoc(userRef);
-    if (!snap.exists()) {
-      await setDoc(userRef, {
-        uid: cred.user.uid,
-        email: cred.user.email,
-        displayName: cred.user.displayName,
-        role: 'volunteer',
-        createdAt: serverTimestamp(),
-        totalDonations: 0,
-        volunteerHours: 0,
-        eventsJoined: 0,
-        impactScore: 0,
-        badges: [],
-        bio: '',
-        phone: '',
-        location: '',
-        interests: [],
-      });
+    try {
+      const provider = new GoogleAuthProvider();
+      const cred = await signInWithPopup(auth, provider);
+      const userRef = doc(db, 'users', cred.user.uid);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) {
+        await setDoc(userRef, {
+          uid: cred.user.uid,
+          email: cred.user.email,
+          displayName: cred.user.displayName,
+          role: 'volunteer',
+          createdAt: serverTimestamp(),
+          totalDonations: 0,
+          volunteerHours: 0,
+          eventsJoined: 0,
+          impactScore: 0,
+          badges: [],
+          bio: '',
+          phone: '',
+          location: '',
+          interests: [],
+        });
+      }
+      return cred;
+    } catch (err) {
+      if (
+        err.code === 'auth/configuration-not-found' ||
+        err.message?.includes('CONFIGURATION_NOT_FOUND') ||
+        err.code === 'auth/invalid-api-key'
+      ) {
+        const configErr = new Error('Google login requires Firebase to be configured. Please use a demo account or email registration instead.');
+        configErr.code = 'auth/configuration-not-found';
+        throw configErr;
+      }
+      throw err;
     }
-    return cred;
   };
 
   const logout = async () => {
