@@ -1,0 +1,19 @@
+{
+  "name": "NayePankh ImpactHub",
+  "short_name": "NayePankh",
+  "description": "NGO management platform - Empowering lives through education, nutrition and community support",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["social", "education", "charity"]
+}
