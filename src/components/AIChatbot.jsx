@@ -26,6 +26,40 @@ const quickReplies = [
   'About NayePankh',
 ];
 
+function getDemoResponse(userText) {
+  const t = userText.toLowerCase();
+
+  if (t.includes('volunteer') || t.includes('apply') || t.includes('join')) {
+    return 'To volunteer with NayePankh:\n1. Visit the Volunteer page\n2. Fill out the application form\n3. Upload your resume\n4. Select your areas of interest\n5. Approval takes 2-3 business days\n\nWe welcome volunteers for education, healthcare, environment, and more! 🌟';
+  }
+  if (t.includes('donat') || t.includes('money') || t.includes('rupee') || t.includes('fund') || t.includes('pay')) {
+    return 'Donating is easy and secure!\n\n💰 What your donation does:\n• ₹100 → 1 book for a student\n• ₹500 → Food kit for a family\n• ₹1,000 → 1 month of education support\n• ₹5,000 → Sponsor a child for a year\n\nVisit the Donate page to contribute. All donations are tax-exempt under 80G! 🙏';
+  }
+  if (t.includes('campaign')) {
+    return 'Our active campaigns:\n\n📚 Education for All — 68% funded\n🍱 Hunger-Free Community — 63% funded\n🌳 Green Earth Initiative — 78% funded\n🏥 Medical Care for Children — 56% funded\n👩 Women Empowerment — 72% funded\n\nVisit the Campaigns page to support any cause! ❤️';
+  }
+  if (t.includes('event')) {
+    return 'Upcoming events:\n\n🏃 Charity Run — Feb 15, Lodhi Garden, Delhi\n📖 Education Workshop — Feb 22, India Habitat Centre\n🌳 Tree Plantation — Mar 8, Gurugram\n🎉 Gala Dinner — Mar 20, Taj Palace\n\nAll events are free except the Gala Dinner. Register on the Events page!';
+  }
+  if (t.includes('about') || t.includes('nayepankh') || t.includes('who') || t.includes('what')) {
+    return 'NayePankh Foundation is an NGO dedicated to empowering underprivileged communities across India 🇮🇳\n\nOur programs:\n📚 Education Support\n🍱 Nutrition Program\n🏥 Healthcare Initiative\n👩 Women Empowerment\n🌳 Environmental Drive\n💻 Digital Literacy\n\nWe have 1,240+ volunteers and have impacted over 12,000 lives. How can I help you get involved?';
+  }
+  if (t.includes('contact') || t.includes('email') || t.includes('phone') || t.includes('reach')) {
+    return 'You can reach us at:\n\n📧 contact@nayepankh.org\n📞 +91 98765 43210\n📍 New Delhi, India\n\nOur team responds within 24 hours. Feel free to ask me anything in the meantime! 😊';
+  }
+  if (t.includes('impact') || t.includes('help') || t.includes('achiev')) {
+    return 'Our collective impact so far:\n\n🎓 12,847 students supported\n🍱 95,420 meals distributed\n🌳 28,500 trees planted\n👩 3,200 women empowered\n🏥 8,400 medical consultations\n💻 5,000 digital literacy graduates\n\nEvery contribution — big or small — makes a real difference! 💙';
+  }
+  if (t.includes('certificate') || t.includes('proof')) {
+    return 'Yes! Volunteers receive digital certificates after completing events. You can download them from your dashboard under the Certificates section. 🏅\n\nDonors also receive an 80G tax exemption certificate via email.';
+  }
+  if (t.includes('hi') || t.includes('hello') || t.includes('hey') || t.includes('namaste')) {
+    return 'Namaste! 🙏 Welcome to NayePankh Foundation!\n\nI can help you with:\n• Volunteering opportunities\n• Making a donation\n• Our active campaigns\n• Upcoming events\n• General information\n\nWhat would you like to know?';
+  }
+
+  return 'Thank you for your question! 😊 NayePankh Foundation works to empower underprivileged communities through education, nutrition, healthcare, and more.\n\nYou can ask me about:\n• How to volunteer\n• Making a donation\n• Our campaigns\n• Upcoming events\n• Contact information\n\nHow can I help you today?';
+}
+
 export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -59,25 +93,12 @@ export default function AIChatbot() {
 
     try {
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      if (!apiKey || apiKey === 'your_gemini_api_key_here') {
-        // Demo response without API
-        await new Promise(r => setTimeout(r, 800));
-        const demoResponses = {
-          volunteer: 'To volunteer with NayePankh:\n1. Visit our Volunteer page\n2. Fill out the application form\n3. Upload your resume\n4. Select your areas of interest\n5. Wait for approval (usually 2-3 days)\n\nWe welcome volunteers for education, healthcare, environment, and more! 🌟',
-          donate: 'Donating is easy!\n\n💰 **Impact of your donation:**\n• ₹100 = 1 Book for a student\n• ₹500 = Food kit for a family\n• ₹1,000 = 1 month Education Support\n• ₹5,000 = Sponsor a child for a year\n\nVisit our Donate page to make a secure contribution. All donations are tax-exempt! 🙏',
-          campaign: 'Our active campaigns:\n\n📚 **Education for All** - 68% funded\n🍱 **Hunger-Free Community** - 63% funded\n🌳 **Green Earth Initiative** - 78% funded\n🏥 **Medical Care for Children** - 56% funded\n👩 **Women Empowerment** - 72% funded\n\nVisit Campaigns page to support any cause! ❤️',
-          event: 'Upcoming events:\n\n🏃 **Charity Run** - Feb 15, Lodhi Garden, Delhi\n📖 **Education Workshop** - Feb 22, India Habitat Centre\n🌳 **Tree Plantation** - Mar 8, Gurugram\n🎉 **Gala Dinner** - Mar 20, Taj Palace\n\nAll are FREE except Gala Dinner. Register on the Events page!',
-          default: 'Thank you for your question! NayePankh Foundation is dedicated to empowering underprivileged communities across India. We work in education, nutrition, healthcare, women empowerment, and environmental initiatives.\n\nHow can I specifically help you today? You can ask about volunteering, donating, campaigns, or events! 😊',
-        };
+      const isValidKey = apiKey && apiKey !== 'your_gemini_api_key_here' && apiKey.startsWith('AIza');
 
-        const lowerText = userText.toLowerCase();
-        let response = demoResponses.default;
-        if (lowerText.includes('volunteer')) response = demoResponses.volunteer;
-        else if (lowerText.includes('donat') || lowerText.includes('money') || lowerText.includes('rupee')) response = demoResponses.donate;
-        else if (lowerText.includes('campaign')) response = demoResponses.campaign;
-        else if (lowerText.includes('event')) response = demoResponses.event;
-
-        setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: response }]);
+      if (!isValidKey) {
+        // Demo response without API key
+        await new Promise(r => setTimeout(r, 700));
+        setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: getDemoResponse(userText) }]);
         return;
       }
 
@@ -100,14 +121,26 @@ export default function AIChatbot() {
           }),
         }
       );
+
+      if (!response.ok) {
+        // API key invalid or quota exceeded — fall back to demo
+        await new Promise(r => setTimeout(r, 400));
+        setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: getDemoResponse(userText) }]);
+        return;
+      }
+
       const data = await response.json();
-      const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not process your request. Please try again.';
+      const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!aiText) {
+        setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: getDemoResponse(userText) }]);
+        return;
+      }
       setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: aiText }]);
     } catch (err) {
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
         role: 'assistant',
-        content: 'I apologize, I\'m having trouble connecting right now. Please try again or contact us at contact@nayepankh.org 🙏',
+        content: getDemoResponse(userText),
       }]);
     } finally {
       setLoading(false);

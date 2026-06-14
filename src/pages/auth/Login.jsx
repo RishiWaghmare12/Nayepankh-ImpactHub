@@ -46,16 +46,25 @@ export default function Login() {
     }
   };
 
-  // Demo login
+  // Demo login — directly signs in without needing Firebase accounts
   const demoLogin = async (role) => {
     const credentials = {
       admin: { email: 'admin@nayepankh.org', password: 'Admin@123' },
       volunteer: { email: 'volunteer@demo.com', password: 'Demo@123' },
       donor: { email: 'donor@demo.com', password: 'Demo@123' },
     };
-    setEmail(credentials[role].email);
-    setPassword(credentials[role].password);
-    toast('Demo credentials filled — click Sign In', { icon: 'ℹ️' });
+    const { email: demoEmail, password: demoPassword } = credentials[role];
+    setError('');
+    setLoading(true);
+    try {
+      await login(demoEmail, demoPassword);
+      toast.success(`Signed in as ${role} demo 👋`);
+      navigate(role === 'admin' ? '/admin' : '/dashboard');
+    } catch (err) {
+      setError('Demo login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

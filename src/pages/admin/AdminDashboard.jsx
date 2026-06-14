@@ -7,20 +7,26 @@ import {
   BarElement, ArcElement, Title, Tooltip, Legend, Filler,
 } from 'chart.js';
 import { campaigns, events, impactStats } from '../../data/sampleData';
+import { useTheme } from '../../context/ThemeContext';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);
 
-const chartDefaults = {
-  responsive: true,
-  plugins: { legend: { display: false } },
-  scales: {
-    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6b7280' } },
-    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6b7280' } },
-  },
-};
-
 export default function AdminDashboard() {
+  const { isDark } = useTheme();
   const totalRaised = campaigns.reduce((s, c) => s + c.raised, 0);
+
+  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+  const tickColor = isDark ? '#6b7280' : '#9ca3af';
+  const legendColor = isDark ? '#9ca3af' : '#6b7280';
+
+  const chartDefaults = {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { color: tickColor } },
+      y: { grid: { color: gridColor }, ticks: { color: tickColor } },
+    },
+  };
 
   const donationData = {
     labels: ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'],
@@ -59,11 +65,13 @@ export default function AdminDashboard() {
     { label: 'Events This Month', value: events.length, change: '+1', icon: Calendar, color: 'from-amber-500 to-orange-600' },
   ];
 
+  const card = 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800';
+
   return (
     <div className="space-y-6 max-w-6xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
           <p className="text-gray-500 text-sm mt-1">Overview of NayePankh platform</p>
         </div>
         <div className="text-sm text-gray-500">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
@@ -93,23 +101,23 @@ export default function AdminDashboard() {
       {/* Charts row */}
       <div className="grid lg:grid-cols-3 gap-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-          className="lg:col-span-2 bg-gray-900 rounded-2xl p-6 border border-gray-800">
+          className={`lg:col-span-2 rounded-2xl p-6 ${card}`}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-white">Donation Trend</h3>
+            <h3 className="font-bold text-gray-900 dark:text-white">Donation Trend</h3>
             <span className="text-xs text-green-400 flex items-center gap-1"><ArrowUpRight size={12} /> +32% vs last period</span>
           </div>
           <Line data={donationData} options={chartDefaults} />
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
-          className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-          <h3 className="font-bold text-white mb-4">Campaign Performance</h3>
+          className={`rounded-2xl p-6 ${card}`}>
+          <h3 className="font-bold text-gray-900 dark:text-white mb-4">Campaign Performance</h3>
           <Doughnut
             data={campaignData}
             options={{
               responsive: true,
               plugins: {
-                legend: { position: 'bottom', labels: { color: '#9ca3af', padding: 12, font: { size: 11 } } },
+                legend: { position: 'bottom', labels: { color: legendColor, padding: 12, font: { size: 11 } } },
                 tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw}%` } },
               },
             }}
@@ -119,12 +127,9 @@ export default function AdminDashboard() {
 
       {/* Volunteer Growth */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-        className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-        <h3 className="font-bold text-white mb-4">Volunteer Growth</h3>
-        <Bar data={volunteerGrowthData} options={{
-          ...chartDefaults,
-          plugins: { legend: { display: false } },
-        }} />
+        className={`rounded-2xl p-6 ${card}`}>
+        <h3 className="font-bold text-gray-900 dark:text-white mb-4">Volunteer Growth</h3>
+        <Bar data={volunteerGrowthData} options={chartDefaults} />
       </motion.div>
 
       {/* Quick stats */}
@@ -135,9 +140,9 @@ export default function AdminDashboard() {
           { label: 'Trees Planted', value: impactStats.treesPlanted.toLocaleString(), emoji: '🌳' },
         ].map((stat, i) => (
           <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + i * 0.1 }}
-            className="bg-gray-900 rounded-2xl p-5 border border-gray-800 text-center">
+            className={`rounded-2xl p-5 text-center ${card}`}>
             <div className="text-3xl mb-2">{stat.emoji}</div>
-            <div className="text-2xl font-bold text-white">{stat.value}</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
             <div className="text-sm text-gray-400 mt-0.5">{stat.label}</div>
           </motion.div>
         ))}
